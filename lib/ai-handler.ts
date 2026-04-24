@@ -52,8 +52,20 @@ export async function generateResponse(config: BotConfig, messages: ChatMessage[
         params.systemInstruction = { role: 'system', parts: [{ text: systemPrompts }] };
       }
 
-      const response = await ai.models.generateContent(params);
-      return response.text || 'No response generated.';
+      try {
+         const response = await ai.models.generateContent(params);
+         return response.text || 'No response generated.';
+      } catch (genErr: any) {
+         if (genErr.message?.includes('503') || genErr.message?.includes('high demand') || genErr.status === 503) {
+            // Hot fallback if Google AI fails via overload; force use of standard gemini fallback 
+            console.log("Caught 503. Executing fallback logic");
+            params.model = 'gemini-2.0-flash'; // Always safe bet
+            const fallbackAi = new GoogleGenAI({ apiKey: config.api_key });
+            const fallbackResponse = await fallbackAi.models.generateContent(params);
+            return fallbackResponse.text || 'No response generated.';
+         }
+         throw genErr;
+      }
     }
 
     if (p === 'openai' || p === 'openrouter') {

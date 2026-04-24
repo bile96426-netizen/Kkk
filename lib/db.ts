@@ -45,6 +45,10 @@ try {
   db.exec(`ALTER TABLE bots ADD COLUMN system_prompt TEXT DEFAULT '';`);
 } catch (err: any) {}
 
+try {
+  db.exec(`ALTER TABLE bots ADD COLUMN system_prompt TEXT DEFAULT '';`);
+} catch (err: any) {}
+
 db.exec(`
   CREATE TABLE IF NOT EXISTS redeem_keys (
     id TEXT PRIMARY KEY,
